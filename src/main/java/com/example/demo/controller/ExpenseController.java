@@ -17,14 +17,21 @@ public class ExpenseController {
     @PostMapping("/parcelar")
     public String criarParcelas(
             @RequestBody Expense despesa,
-            @AuthenticationPrincipal Jwt jwt // 👈 Aqui o Java captura o Token automaticamente
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        // O campo "sub" no token do Supabase contém o ID único do usuário
-        String userIdLogado = jwt.getClaim("sub");
+        String userIdLogado;
 
-        // Agora passamos o ID do usuário diretamente para o Service
+        // Se o token for nulo (teste sem login), usamos o seu ID real do banco
+        if (jwt == null) {
+            userIdLogado = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+            System.out.println("LOG: Usando ID de teste: " + userIdLogado);
+        } else {
+            userIdLogado = jwt.getClaim("sub");
+        }
+
+        // Agora o Service vai encontrar o usuário a0eeb... no banco e salvar!
         expenseService.criarDespesaParcelado(despesa, userIdLogado);
 
-        return "Despesas vinculadas ao usuário " + userIdLogado + " criadas com sucesso!";
+        return "Sucesso! Parcelas criadas para o usuário: " + userIdLogado;
     }
 }
